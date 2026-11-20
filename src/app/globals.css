@@ -1,0 +1,546 @@
+@import "tailwindcss";
+
+/*
+ * Progress of the PRISM sample-trace replay, 0 → 1 (see TraceReplay). Registered so it can be
+ * animated; it defaults to 1, so without the animation (reduced motion) the trace shows complete.
+ */
+@property --trace-t {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* Where the light sits on the hero's primary CTA border (see .cta-orbit-border); animated, so registered */
+@property --cta-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 200deg;
+}
+
+/* MoogleLabs light theme tokens */
+@theme {
+  --color-paper: #fafafd;
+  --color-surface: #ffffff;
+  --color-ink: #14163b;
+  --color-ink-soft: #2b2e55;
+  --color-slate: #575c7a;
+  --color-line: #e3e4ef;
+  --color-line-soft: #eeeef6;
+  --color-violet: #795df5;
+  --color-violet-strong: #5b3fd6;
+  --color-violet-wash: #f3f0ff;
+  /* Violet for text and icons on ink surfaces */
+  --color-violet-soft: #bcaeff;
+  /* Cool tint behind the PRISM AI panel (the DevForge panel uses violet-wash) */
+  --color-prism-wash: #f3f6fd;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Hero motion: slow photo drift, one staggered card entrance, a live-status pulse */
+  --animate-hero-drift: hero-drift 28s ease-in-out infinite alternate;
+  --animate-card-in: card-in 0.9s var(--ease-out-soft) both;
+  --animate-soft-pulse: soft-pulse 2.4s ease-in-out infinite;
+
+  @keyframes hero-drift {
+    from {
+      transform: scale(1.04) translate3d(0, 0, 0);
+    }
+    to {
+      transform: scale(1.12) translate3d(-1.5%, -1%, 0);
+    }
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes soft-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgb(121 93 245 / 0.45);
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgb(121 93 245 / 0);
+    }
+  }
+
+  /*
+   * Industries flow. One 4s packet run per sector (IndustryFlow's TOUR_MS): core → sector (0–40%),
+   * sector → card (40–65%), card → screen edge (65–90%). Ambient packets feed the core.
+   */
+  --animate-route-out: route-out 4s linear infinite;
+  --animate-route-in: route-in 4s linear infinite;
+  --animate-route-exit: route-exit 4s linear infinite;
+  --animate-edge-glow: edge-glow 4s ease-in-out infinite;
+  --animate-route-ambient: route-ambient 6s linear infinite;
+  --animate-swap-in: swap-in 0.55s var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 0.5s ease-out both;
+
+  /* Enterprise stack: PRISM trace replay, DevForge orbit rings, the capability wire's packet */
+  --animate-trace-replay: trace-replay 8s linear infinite;
+  --animate-trace-fade: trace-fade 8s linear infinite;
+  --animate-orbit-spin: orbit-spin 90s linear infinite;
+  --animate-orbit-spin-reverse: orbit-spin 140s linear infinite reverse;
+  --animate-wire-run: wire-run 7s linear infinite;
+
+  /* Orb hero: the highlighted question's packet runs down its wire into the orb, once per 4s highlight */
+  --animate-feed: feed 4s linear infinite;
+  /* The glow behind the orb swells and settles */
+  --animate-orb-breathe: orb-breathe 6s ease-in-out infinite alternate;
+  /* The light circling the primary CTA's border */
+  --animate-cta-orbit: cta-orbit 8s linear infinite;
+
+  /*
+   * Operating model: a packet climbs the value curve to the right screen edge (route-ambient's
+   * dash, 6s), and the edge glow flares as it arrives (edge-glow peaks at 89%, between the head
+   * reaching the edge at ~83% and the tail clearing it at ~94%).
+   */
+  --animate-value-run: route-ambient 6s linear infinite;
+  --animate-value-glow: edge-glow 6s ease-in-out infinite;
+
+  @keyframes cta-orbit {
+    from {
+      --cta-angle: 0deg;
+    }
+    to {
+      --cta-angle: 360deg;
+    }
+  }
+
+  @keyframes orb-breathe {
+    from {
+      opacity: 0.82;
+      scale: 0.97;
+    }
+    to {
+      opacity: 1;
+      scale: 1.03;
+    }
+  }
+
+  @keyframes feed {
+    0% {
+      stroke-dashoffset: 20;
+    }
+    55%,
+    100% {
+      stroke-dashoffset: -108;
+    }
+  }
+
+  /* One 8s loop: empty for a beat, the playhead sweeps (6–46%), the result holds, then it fades */
+  @keyframes trace-replay {
+    0%,
+    6% {
+      --trace-t: 0;
+    }
+    46%,
+    100% {
+      --trace-t: 1;
+    }
+  }
+
+  @keyframes trace-fade {
+    0% {
+      opacity: 0;
+    }
+    4%,
+    94% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes orbit-spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @keyframes wire-run {
+    from {
+      transform: translateX(-12rem);
+    }
+    to {
+      transform: translateX(100vw);
+    }
+  }
+
+  /* Routes use pathLength=100 and a 14-unit dash: offset 20 parks it before the start, -108 past the end */
+  @keyframes route-out {
+    0% {
+      stroke-dashoffset: 20;
+    }
+    40%,
+    100% {
+      stroke-dashoffset: -108;
+    }
+  }
+
+  @keyframes route-in {
+    0%,
+    40% {
+      stroke-dashoffset: 20;
+    }
+    65%,
+    100% {
+      stroke-dashoffset: -108;
+    }
+  }
+
+  @keyframes route-exit {
+    0%,
+    65% {
+      stroke-dashoffset: 20;
+    }
+    90%,
+    100% {
+      stroke-dashoffset: -108;
+    }
+  }
+
+  /* The packet's head reaches the screen edge at ~86% and clears it by 90%: flare in between */
+  @keyframes edge-glow {
+    0%,
+    80% {
+      opacity: 0.45;
+    }
+    89% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.45;
+    }
+  }
+
+  @keyframes route-ambient {
+    from {
+      stroke-dashoffset: 20;
+    }
+    to {
+      stroke-dashoffset: -108;
+    }
+  }
+
+  @keyframes swap-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 6px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@theme inline {
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * A subtle 3D bevel for every icon's tile, and for the arrow chips in buttons: a sheen across the
+ * face, a lit top edge, a shaded lower edge for thickness, a hairline ring, a soft contact shadow,
+ * and the glyph faintly embossed. One per surface: light tiles on paper and white, filled violet
+ * for active states, translucent tiles on ink, glass chips inside buttons, plain white.
+ *
+ * Each sets the tile's background and box-shadow (light, violet and dark set the glyph colour too),
+ * so drop ring-* and shadow-* classes where they are used. They are utilities, so variants work
+ * (group-hover:bevel-violet); to fade between states, transition color, background-color and
+ * box-shadow. Every box-shadow has the same five layers, so the states interpolate.
+ */
+@utility bevel-light {
+  color: var(--color-violet-strong);
+  background-color: var(--color-violet-wash);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0) 65%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    inset 0 -2px 0 rgb(91 63 214 / 0.12),
+    0 0 0 1px rgb(121 93 245 / 0.18),
+    0 1px 2px rgb(20 22 59 / 0.06),
+    0 6px 12px -7px rgb(91 63 214 / 0.45);
+
+  & svg {
+    filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.9));
+  }
+}
+
+@utility bevel-violet {
+  color: #ffffff;
+  background-color: var(--color-violet);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0) 55%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    inset 0 -2px 0 rgb(20 22 59 / 0.22),
+    0 0 0 1px rgb(91 63 214 / 0.5),
+    0 1px 2px rgb(20 22 59 / 0.12),
+    0 8px 16px -8px rgb(91 63 214 / 0.85);
+
+  & svg {
+    filter: drop-shadow(0 1px 0 rgb(20 22 59 / 0.3));
+  }
+}
+
+@utility bevel-dark {
+  color: var(--color-violet-soft);
+  background-color: rgb(255 255 255 / 0.05);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0) 65%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.13),
+    inset 0 -2px 0 rgb(0 0 0 / 0.28),
+    0 0 0 1px rgb(255 255 255 / 0.1),
+    0 1px 2px rgb(0 0 0 / 0.3),
+    0 6px 14px -8px rgb(0 0 0 / 0.6);
+
+  & svg {
+    filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.45));
+  }
+}
+
+/* Inside violet and ink buttons; keeps the button's text colour */
+@utility bevel-glass {
+  background-color: rgb(255 255 255 / 0.14);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 65%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.32),
+    inset 0 -2px 0 rgb(20 22 59 / 0.16),
+    0 0 0 1px rgb(255 255 255 / 0.22),
+    0 1px 2px rgb(20 22 59 / 0.15),
+    0 4px 10px -6px rgb(20 22 59 / 0.45);
+
+  & svg {
+    filter: drop-shadow(0 1px 0 rgb(20 22 59 / 0.25));
+  }
+}
+
+/* Keeps the text colour it's given */
+@utility bevel-white {
+  background-color: #ffffff;
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0), rgb(91 63 214 / 0.06));
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 0 rgb(91 63 214 / 0.12),
+    0 0 0 1px rgb(20 22 59 / 0.1),
+    0 1px 2px rgb(20 22 59 / 0.1),
+    0 6px 12px -8px rgb(20 22 59 / 0.4);
+
+  & svg {
+    filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.9));
+  }
+}
+
+:root {
+  color-scheme: light;
+  /* Lets height transition to and from auto (the FAQ's details panels) */
+  interpolate-size: allow-keywords;
+}
+
+html {
+  background: var(--color-paper);
+  /* In-page anchors land below the floating header */
+  scroll-padding-top: 6rem;
+}
+
+/*
+ * Native smooth anchors only until Lenis takes over (it adds .lenis to <html>); CSS smooth
+ * scrolling would fight Lenis's own animation.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-violet) 22%, transparent);
+  color: var(--color-ink);
+}
+
+/* Typographic roles (Archivo variable: wght + wdth) */
+@layer components {
+  /* Sized to its container so the longest unbreakable word ("Production-grade") always fits */
+  .type-display {
+    font-size: clamp(2rem, 10.25cqi, 3.875rem);
+    line-height: 1.04;
+    font-weight: 560;
+    font-stretch: 110%;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+
+  .type-lead {
+    font-size: 1.125rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+
+  /* Section headings in narrow columns: sized to the column so long words never overflow */
+  .type-section {
+    font-size: clamp(2rem, 12.5cqi, 3rem);
+    line-height: 1.06;
+    font-weight: 560;
+    font-stretch: 110%;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  /* Static film grain for photo tiles (matches the hero's animated grain) */
+  .grain-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+  }
+
+  /* MoogleLabs mark as a square 3D tile (see MarkTile) */
+  .mark-tile {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .mark-tile-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bcaeff;
+    background: linear-gradient(145deg, #4b50ad 0%, #262a72 34%, #15174a 66%, #0b0c28 100%);
+    box-shadow:
+      inset 1px 1px 0 rgb(255 255 255 / 0.32),
+      inset -1px -1px 0 rgb(0 0 0 / 0.55),
+      inset 0 0 0 2px rgb(169 150 255 / 0.16),
+      0 1px 2px rgb(20 22 59 / 0.35),
+      0 10px 22px -10px rgb(52 36 150 / 0.55);
+  }
+
+  /* Glossy band across the top of the bevel */
+  .mark-tile-face::before {
+    content: "";
+    position: absolute;
+    inset: 2px 2px 52% 2px;
+    border-radius: 2px 2px 0 0;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0));
+    pointer-events: none;
+  }
+
+  /* Embossed glyph: lit top edge, shadowed lower edge, soft violet glow */
+  .mark-tile-glyph {
+    position: relative;
+    filter: drop-shadow(0 -0.5px 0 rgb(255 255 255 / 0.5)) drop-shadow(0 1.5px 1px rgb(0 0 0 / 0.6))
+      drop-shadow(0 0 5px rgb(121 93 245 / 0.6));
+  }
+
+
+  /*
+   * PRISM sample-trace replay, all driven by --trace-t (0 → 1, animated on the console).
+   * A bar fills while the playhead crosses its span (--s start, --d duration, as fractions).
+   */
+  .trace-bar {
+    transform-origin: left center;
+    scale: clamp(0, calc((var(--trace-t) - var(--s)) / var(--d)), 1) 1;
+  }
+
+  .trace-playhead {
+    left: calc(var(--trace-t) * 100%);
+    opacity: clamp(0, calc((1 - var(--trace-t)) * 40), 1);
+  }
+
+  /* Shown once the replay completes, and the opposite */
+  .trace-done {
+    opacity: clamp(0, calc((var(--trace-t) - 0.995) * 200), 1);
+  }
+
+  .trace-running {
+    opacity: clamp(0, calc((0.995 - var(--trace-t)) * 200), 1);
+  }
+
+  /*
+   * Holds CSS animations (e.g. until an element is on screen). !important because the animate-*
+   * utilities live in the later utilities layer, and their animation shorthand resets the play state.
+   */
+  .motion-paused,
+  .motion-paused * {
+    animation-play-state: paused !important;
+  }
+
+  /* The primary CTA's 1px border: faint lavender all round, with one bright arc that --cta-angle moves */
+  .cta-orbit-border {
+    background: conic-gradient(
+      from var(--cta-angle),
+      rgb(188 174 255 / 0.28) 0deg,
+      rgb(255 255 255 / 0.75) 40deg,
+      rgb(188 174 255 / 0.28) 90deg,
+      rgb(188 174 255 / 0.28) 360deg
+    );
+  }
+
+  /*
+   * FAQ <details>: the answer slides open where ::details-content is supported, and simply
+   * appears elsewhere. The marker is hidden; the summary draws its own plus icon.
+   */
+  .faq-item > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .faq-item > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item::details-content {
+    height: 0;
+    overflow: clip;
+    transition:
+      height 0.4s var(--ease-out-soft),
+      content-visibility 0.4s allow-discrete;
+  }
+
+  .faq-item[open]::details-content {
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-item::details-content {
+      transition: none;
+    }
+  }
+
+  .type-card-title {
+    font-size: 1.1875rem;
+    line-height: 1.32;
+    font-weight: 580;
+    font-stretch: 106%;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+}
